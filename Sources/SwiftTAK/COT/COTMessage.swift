@@ -150,7 +150,9 @@ public class COTMessage: NSObject {
     
     public func generateChatMessage(message: String,
                                     sender: String,
+                                    senderUID: String? = nil,
                                     receiver: String = TAKConstants.DEFAULT_CHATROOM_NAME,
+                                    receiverUID: String? = nil,
                                     destinationUrl: String,
                                     positionInfo: COTPositionInformation = COTPositionInformation()) -> String {
         let cotType = COTMessage.DEFAULT_CHAT_COT_TYPE
@@ -160,8 +162,11 @@ public class COTMessage: NSObject {
         let stale = Date().addingTimeInterval(ONE_DAY)
         
         let from = sender
-        let conversationID = UUID().uuidString
+        let isDM = receiver != TAKConstants.DEFAULT_CHATROOM_NAME
+        let chatroom = isDM ? receiver : TAKConstants.DEFAULT_CHATROOM_NAME
+        let conversationID = isDM ? (receiverUID ?? receiver) : TAKConstants.DEFAULT_CHATROOM_NAME
         let messageID = UUID().uuidString
+        let senderUIDValue = senderUID ?? deviceID
         
         let eventUID = "GeoChat.\(from).\(conversationID).\(messageID)"
         
@@ -178,13 +183,26 @@ public class COTMessage: NSObject {
         
         let remarksSource = "BAO.F.TAKTracker.\(from)"
         
-        let cotChat = COTChat(senderCallsign: from, messageID: messageID)
+        let chatGroup = COTChatGroup(
+            uid0: senderUIDValue,
+            uid1: isDM ? (receiverUID ?? receiver) : TAKConstants.DEFAULT_CHATROOM_NAME,
+            id: chatroom)
+        let cotChat = COTChat(
+            id: chatroom,
+            chatroom: chatroom,
+            senderCallsign: from,
+            messageID: messageID,
+            chatGroup: chatGroup)
         let cotLink = COTLink(relation: LinkType.ParentProducer.rawValue, type: "a-f-G-U-C", uid: messageID)
         let cotRemarks = COTRemarks(source: remarksSource, timestamp: Date.now, message: message)
         
         cotDetail.childNodes.append(cotChat)
         cotDetail.childNodes.append(cotLink)
         cotDetail.childNodes.append(cotRemarks)
+        
+        if isDM {
+            cotDetail.childNodes.append(COTMarti(callsign: receiver))
+        }
         
         cotEvent.childNodes.append(cotDetail)
         

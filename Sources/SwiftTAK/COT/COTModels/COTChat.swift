@@ -37,6 +37,9 @@ public struct COTChat : COTNode, Equatable {
         attrs["parent"] = parent
         attrs["senderCallsign"] = senderCallsign
         attrs["messageID"] = messageID
+        if let chatGroup = cotChatGroup {
+            return COTXMLHelper.generateXML(nodeName: "__chat", attributes: attrs, childNodes: [chatGroup])
+        }
         return COTXMLHelper.generateXML(nodeName: "__chat", attributes: attrs, message: "")
     }
     
