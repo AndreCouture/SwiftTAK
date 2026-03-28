@@ -40,7 +40,7 @@ public class COTMessage: NSObject {
     static public let COT_EVENT_VERSION = "2.0"
     
     var staleTimeMinutes: Double
-    var deviceID: String
+    public var deviceID: String
     var phoneModel: String
     var appPlatform: String
     var phoneOS: String
